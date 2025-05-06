@@ -6,11 +6,93 @@ const graphql_endpoint = "https://www.warcraftlogs.com/api/v2/client";
 let access_token;
 
 module.exports = {
-    getCharacterByName: getCharacterByName,
-    connect: connect,
-    request: request,
-    getSchema: getSchema
+    test,
+    getSurvival,
+    getZone,
+    getThirdTid,
+    getNamedMob,
+    getCharacterByName,
+    connect,
+    request,
+    getSchema
 };
+
+function test() {
+    return new Promise((resolve) => {
+        let args = [];
+        request("test", args).then(json => {
+            try {
+                resolve(json);
+            } catch (error) {
+                console.log("Error in getSurvival:", json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
+
+function getSurvival(code, fids, sourceId) {
+    return new Promise((resolve) => {
+        let args = [];
+        args["code"] = code;
+        args["fids"] = fids.join(",");
+        args["sourceID"] = sourceId;
+        request("survival", args).then(json => {
+            try {
+                resolve(json.data.reportData.report);
+            } catch (error) {
+                console.log("Error in getSurvival:", json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
+
+function getZone() {
+    return new Promise((resolve) => {
+        let args = [];
+        request("zone", args).then(json => {
+            resolve(json.data.worldData.zones);
+        })
+    });
+}
+
+function getThirdTid(code, fid) {
+    return new Promise((resolve) => {
+        let args = [];
+        args["code"] = code;
+        args["fid"] = fid;
+        request("namedMobChild", args).then(json => {
+            try {
+                resolve(json.data.reportData.report.fights[0].enemyNPCs[0].id);
+            } catch (error) {
+                console.log("Error in getThirdTid:", json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
+
+function getNamedMob(code, fids, tid) {
+    return new Promise((resolve) => {
+        let args = [];
+        args["code"] = code;
+        args["fids"] = fids.join(",");
+        args["tid"] = tid;
+        request("namedMob", args).then(json => {
+            try {
+                resolve(json.data.reportData.report);
+            } catch (error) {
+                console.log("Error in getNamedMob:", args, json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
 
 function getCharacterByName(name, server, region) {
     return new Promise((resolve) => {
@@ -19,7 +101,13 @@ function getCharacterByName(name, server, region) {
         args["server"] = server;
         args["region"] = region;
         request("character", args).then(json => {
-            resolve(json.data.characterData.character);
+            try {
+                resolve(json.data.characterData.character);
+            } catch (error) {
+                console.log("Error in getCharacterByName:", json);
+                resolve(null);
+                return;
+            }
         })
     });
 }

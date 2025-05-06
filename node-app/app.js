@@ -1,260 +1,184 @@
 require('dotenv').config();
+const WarcraftLog = require("./index");
 const express = require("express");
-const axios = require("axios");
 
 const app = express();
 const PORT = 3000;
 
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const WL_CLIENT_ID = process.env.CLIENT_ID;
+const WL_CLIENT_SECRET = process.env.CLIENT_SECRET;
 
-let accessToken = null;
 
-async function getAccessToken() {
-	if (accessToken) {
-		return accessToken;
-	}
-	const response = await axios.post(
-	"https://www.warcraftlogs.com/oauth/token",
-		new URLSearchParams({ "grant_type": "client_credentials" }),
-		{
-			auth: {
-				username: CLIENT_ID,
-				password: CLIENT_SECRET,
-			},
-			headers: {
-				"Content-Type": "application/x-www-form-urlencoded",
-			}
-		}
-	);
-	if (response.status === 200) {
-		accessToken = response.data.access_token;
-		return accessToken;
-	} else {
-		throw new Error("Failed to get access token");
-	}
-}
+WarcraftLog.connect(
+    WL_CLIENT_ID,
+    WL_CLIENT_SECRET
+);
 
-const LOG_URL = "https://www.warcraftlogs.com/api/v2/client";
-
-async function getSummary(token, cName, sName) {
-	try {
-	const res = await axios.post(
-		LOG_URL,
-		{
-			query: `
-				{
-					characterData {
-						character(name: "${cName}", serverSlug: "${sName}", serverRegion: "KR") {
-						zoneRankings
-						}
-					}
-				}
-			` },
-		{
-			headers: {
-				"Authorization": `Bearer ${token}`,
-				"Content-Type": "application/json"
-			}
-		}
-	)
-		return res.data;
-	} catch (err) {
-		console.log("eeeerrrr")
-		throw err
-
-	}
-}
-
-async function test(token, code, fid, page = 0) {
-	try {
-		const res = await axios.post(
-			LOG_URL,
-			{
-				query : `
-				{
-					reportData {
-						report(code: "${code}") {
-							table(fightIDs: [${fid}], dataType: DamageDone, encounterID: 3011, targetID: 348 ${page === 0 ? "" : `, startTime: ${page}`})
-						}
-					}
-				}
-				`
-			},
-			{
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json"
-				}
-			}
-		);
-		return res.data;
-	} catch (err) {
-		throw err
-	}
-}
-
-async function getThirdNamedMob(token, code, fid, tid) {
-	try {
-		const res = await axios.post(
-			LOG_URL,
-			{
-				query : `
-				{
-					reportData {
-						report(code: "${code}") {
-							table(fightIDs: [${fid}], dataType: DamageDone, encounterID: 3011, targetID: ${tid})
-							phases {
-								encounterID
-							}
-						}
-					}
-				}
-				`
-			},
-			{
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json"
-				}
-			}
-		);
-		return res.data;
-	} catch (err) {
-		throw err
-	}
-}
-
-async function getThirdTid(token, code, fid) {
-	try {
-		const res = await axios.post(
-			LOG_URL,
-			{
-				query: `
-					{
-						reportData {
-							report(code: "${code}") {
-								fights(fightIDs: [${fid}]) {
-									id
-									encounterID
-									endTime
-									completeRaid
-									enemyNPCs {
-										id
-										gameID
-										instanceCount
-										groupCount
-									}
-								}
-							}
-						}
-					}
-				`
-			},
-			{
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json"
-				}
-			}
-		);
-		return res.data;
-	} catch (err) {
-		consol.log("err");
-		throw err
-	}
-}
-
-async function getFights(token, cName, sName) {
-	try {
-		const res = await axios.post(
-			LOG_URL,
-			{
-				query: `
-					{
-						characterData {
-							character(name: "${cName}", serverSlug: "${sName}", serverRegion: "KR") {
-								encounterRankings(encounterID: 3011)
-							}
-						}
-					}
-				`
-			},
-			{
-				headers: {
-					"Authorization": `Bearer ${token}`,
-					"Content-Type": "application/json"
-				}
-			}
-		);
-
-		return res.data;
-	} catch (err) {
-		console.log("err")
-		throw err
-	}
-}
 
 app.get("", async (req, res) => {
 	return res.status(200).json({ msg: "Hello World!" });
-})
-
-app.get("/thirdNamedMob", async (req, res) => {
-	const { cName, sName } = req.query;
-	try {
-		const token = await getAccessToken();
-		const res1 = await getFights(token, cName, sName);
-		const ranks = res1.data.characterData.character.encounterRankings.ranks;
-		const dd = ranks.map(rank => {
-			return { code: rank.report.code, fid: rank.report.fightID }
-		});
-
-		if (dd.length === 0) {
-			return res.status(404).json({ error: "No data found" });
-		}
-
-		const tidRes = await getThirdTid(token, dd[0].code, dd[0].fid);
-		const tid = tidRes.data.reportData.report.fights[0].enemyNPCs[0].id;
-		const res2 = await getThirdNamedMob(token, dd[0].code, dd[0].fid, tid);
-		
-
-		return res.status(200).json(res2.data.reportData.report.table.data.entries.map(entry => {
-			return {
-				name: entry.name,
-				type: entry.type,
-				itemLevel: entry.itemLevel,
-				totalDamage: entry.total,
-				// targets: entry.targets,
-			}
-		}));
-	} catch (err) {
-		return res.status(500).json({ error: "Failed to fetch data", data: err });
-	}
-})
+});
 
 app.get("/summary", async (req, res) => {
-	const { cName, sName } = req.query;
-	if (!cName || !sName) {
-		return res.status(400).json({ error: "Miss param" });
+	let { cName, sName } = req.query;
+	if (!sName) {
+		sName = "azshara";
 	}
-
 	try {
-		const token = await getAccessToken();
-		const result = await getSummary(token, cName, sName);
-		return res.status(200).json(result);
+		const result = await WarcraftLog.getCharacterByName(cName, sName, "KR").then(json => {
+			if(json !== null) {
+				console.log("- ✅   getCharacterByName tested");
+				return json;
+			} else {
+				console.log("- ❌   getCharacterByName tested");
+				return null;
+			}
+		});
+
+		if (result === null) {
+			return res.status(500).json({ error: "Failed to fetch data", err_code: 1 });
+		}
+
+		const ranks = result.encounterRankings.ranks;
+		const dd = ranks.map(rank => {
+			return { order: rank.rankPercent, code: rank.report.code, fid: rank.report.fightID }
+		});
+
+		let targetSourceId = null;
+		let survival = null;
+		let myThirdNamedMobChild = null;
+		if (dd.length) {
+			dd.sort((a, b) => {
+				if (a.order < b.order) {
+					return 1;
+				}
+				if (a.order > b.order) {
+					return -1;
+				}
+				return 0;
+			});
+
+			const tid = await WarcraftLog.getThirdTid(dd[0].code, dd[0].fid).then(json => {
+				if(json !== null) {
+					console.log("- ✅   getThirdTid tested");
+					return json;
+				} else {
+					console.log("- ❌   getThirdTid tested");
+					return null;
+				}
+			});
+			if (tid === null) {
+				return res.status(500).json({ error: "Failed to fetch data", err_code: 2 });
+			}
+
+			const namedMobData = await WarcraftLog.getNamedMob(dd[0].code, dd.map(d => d.fid), tid).then(json => {
+				if(json !== null) {
+					console.log("- ✅   getNamedMob tested");
+					return json;
+				} else {
+					console.log("- ❌   getNamedMob tested");
+					return null;
+				}
+			});
+	
+			if (namedMobData === null) {
+				return res.status(500).json({ error: "Failed to fetch data", err_code: 3 });
+			}
+			targetSourceId = namedMobData.table.data.entries.filter(entry => entry.name === cName)[0].id;
+			myThirdNamedMobChild = namedMobData.table.data.entries.map(entry => {
+				return {
+					name: entry.name,
+					type: entry.type,
+					itemLevel: entry.itemLevel,
+					totalDamage: entry.total,
+				}
+			}).sort((a, b) => {
+				if (a.totalDamage < b.totalDamage) {
+					return 1;
+				}
+				if (a.totalDamage > b.totalDamage) {
+					return -1;
+				}
+				return 0;
+			}).findIndex(entry => entry.name === cName) + 1;
+
+			
+
+			survival = await WarcraftLog.getSurvival(dd[0].code, [dd[0].fid], targetSourceId).then(json => {
+				if(json !== null) {
+					console.log("- ✅   getSurvival tested");
+					return json;
+				} else {
+					console.log("- ❌   getSurvival tested");
+					return null;
+				}
+			});
+
+			for (let i = 0; i < dd.length; i++) {
+				// const surv = await WarcraftLog.getSurvival(dd[i].code, [dd[0].fid], targetSourceId)
+			}
+
+			console.log("code :", dd[0].code, "fids :", [dd[0].fid]);
+		}
+
+		const progress = result.zoneRankings.rankings.findIndex(rank => rank.rankPercent === null);
+
+		const data = {
+			characterName: cName,
+			serverName: sName,
+			region: "KR",
+			bestPerformanceAverage: result.zoneRankings.bestPerformanceAverage,
+			difficulty: difficultyTemp[result.zoneRankings.difficulty],
+			zone: zoneTemp.filter(zoneData => zoneData.id === result.zoneRankings.zone)[0].name,
+			thirdNamedChildMobScores: myThirdNamedMobChild,
+			trying: `${progress === -1 ? "올킬" : progress + 1 + "넴" }`,
+			zoneRankings: [result.zoneRankings.rankings.map(ranking => {
+				return {
+					name: ranking.encounter.name,
+					rankPercent: ranking.rankPercent,
+					totalKills: ranking.totalKills,
+					spec: ranking.spec,
+					bestAmount: ranking.bestAmount,
+				}
+			})],
+		}
+
+		return res.status(200).json({ survival, data });
 	} catch (err) {
+		console.error("err :", err.message);
 		return res.status(500).json({ error: "Failed to fetch data" });
 	}
-})
+});
 
 app.get("/test", async (req, res) => {
-	const { cName, fid, sName } = req.query;
 	try {
-		const token = await getAccessToken();
-		// const result = await test(token, code, fid, page);
-		const result = await getThirdTid(token, "", 52);
-		return res.status(200).json({ result });
-	} catch (err) {
+		// const result = await WarcraftLog.getCharacterByName("다순이", "azshara", "KR").then(json => {
+		// 	if(json !== null) {
+		// 		console.log("- ✅   getCharacterByName tested");
+		// 		return json;
+		// 	} else {
+		// 		console.log("- ❌   getCharacterByName tested");
+		// 		return null;
+		// 	}
+		// });
+
+		const result = await WarcraftLog.test().then(json => {
+			if(json !== null) {
+				console.log("- ✅  tested", json);
+				return json;
+			} else {
+				console.log("- ❌  tested", json);
+				return null;
+			}
+		});
+
+		if (result === null) {
+			return res.status(500).json({ error: "Failed to fetch data", err_code: 1 });
+		}
+
+		return res.status(200).json(result);
+	}
+	catch (err) {
 		console.error("err :", err.message);
 		return res.status(500).json({ error: "Failed to fetch data" });
 	}
@@ -264,43 +188,228 @@ app.listen(PORT, () => {
 	console.log(`server running on localhost:${PORT}`);
 });
 
-function getSortedDamage(events) {
-	const totalDmgBySource = events.reduce((acc, e) => {
-		const sourceId = e.sourceID;
-		const dmg = e.amount || 0;
-
-		acc[sourceId] = (acc[sourceId] || 0) + dmg;
-		return acc;
-	}, {});
-	console.log(totalDmgBySource);
-	return Object.entries(totalDmgBySource)
-		.map(([sourceId, totalDmg]) => ({
-			sourceId: Number(sourceId),
-			totalDmg
-		}))
-		.sort((a, b) => b.totalDmg - a.totalDmg);
-}
-
-function getDamageRanking(pds, sortedDmg) {
-	const allPlayers = [
-		...(pds.tanks || []),
-		...(pds.healers || []),
-		...(pds.dps || [])
-	];
-
-	const playerMap = Object.fromEntries(
-		allPlayers.map(player => [player.id, player])
-	);
-
-	return sortedDmg.map(({ sourceId, totalDmg }) => {
-		const player = playerMap[sourceId];
-
-		return {
-			id: sourceId,
-			name: player?.name ?? 'Unknown',
-			type: player?.type ?? 'Unknown',
-			spec: player?.specs?.[0]?.spec ?? 'Unknown',
-			totalDamage: totalDmg
-		}
-	});
-}
+const difficultyTemp = ["", "", "공찾", "일반", "영웅", "신화"];
+const zoneTemp = [
+	{
+	  id: 41,
+	  name: 'Delves',
+	  expansion: { id: 6, name: 'The War Within' },
+	  frozen: false
+	},
+	{
+	  id: 43,
+	  name: 'Mythic+ Season 2',
+	  expansion: { id: 6, name: 'The War Within' },
+	  frozen: false
+	},
+	{
+	  id: 39,
+	  name: 'Mythic+ Season 1',
+	  expansion: { id: 6, name: 'The War Within' },
+	  frozen: true
+	},
+	{
+	  id: 37,
+	  name: 'Mythic+ Season 4',
+	  expansion: { id: 5, name: 'Dragonflight' },
+	  frozen: true
+	},
+	{
+	  id: 36,
+	  name: 'Mythic+ Season 3',
+	  expansion: { id: 5, name: 'Dragonflight' },
+	  frozen: true
+	},
+	{
+	  id: 34,
+	  name: 'Mythic+ Season 2',
+	  expansion: { id: 5, name: 'Dragonflight' },
+	  frozen: true
+	},
+	{
+	  id: 32,
+	  name: 'Mythic+ Season 1',
+	  expansion: { id: 5, name: 'Dragonflight' },
+	  frozen: true
+	},
+	{
+	  id: 30,
+	  name: 'Mythic+ Season 4',
+	  expansion: { id: 4, name: 'Shadowlands' },
+	  frozen: true
+	},
+	{
+	  id: 9,
+	  name: 'Mythic+ Dungeons',
+	  expansion: { id: 2, name: 'Legion' },
+	  frozen: true
+	},
+	{
+	  id: 35,
+	  name: "Amirdrassil, the Dream's Hope",
+	  expansion: { id: 5, name: 'Dragonflight' },
+	  frozen: true
+	},
+	{
+	  id: 33,
+	  name: 'Aberrus, the Shadowed Crucible',
+	  expansion: { id: 5, name: 'Dragonflight' },
+	  frozen: true
+	},
+	{
+	  id: 31,
+	  name: 'Vault of the Incarnates',
+	  expansion: { id: 5, name: 'Dragonflight' },
+	  frozen: true
+	},
+	{
+	  id: 29,
+	  name: 'Sepulcher of the First Ones',
+	  expansion: { id: 4, name: 'Shadowlands' },
+	  frozen: true
+	},
+	{
+	  id: 28,
+	  name: 'Sanctum of Domination',
+	  expansion: { id: 4, name: 'Shadowlands' },
+	  frozen: true
+	},
+	{
+	  id: 26,
+	  name: 'Castle Nathria',
+	  expansion: { id: 4, name: 'Shadowlands' },
+	  frozen: true
+	},
+	{
+	  id: 20,
+	  name: 'Mythic+ Dungeons',
+	  expansion: { id: 3, name: 'Battle for Azeroth' },
+	  frozen: true
+	},
+	{
+	  id: 17,
+	  name: 'Antorus, The Burning Throne',
+	  expansion: { id: 2, name: 'Legion' },
+	  frozen: true
+	},
+	{
+	  id: 13,
+	  name: 'Tomb of Sargeras',
+	  expansion: { id: 2, name: 'Legion' },
+	  frozen: true
+	},
+	{
+	  id: 11,
+	  name: 'The Nighthold',
+	  expansion: { id: 2, name: 'Legion' },
+	  frozen: true
+	},
+	{
+	  id: 42,
+	  name: 'Liberation of Undermine',
+	  expansion: { id: 6, name: 'The War Within' },
+	  frozen: false
+	},
+	{
+	  id: 40,
+	  name: 'Blackrock Depths',
+	  expansion: { id: 6, name: 'The War Within' },
+	  frozen: true
+	},
+	{
+	  id: 38,
+	  name: 'Nerub-ar Palace',
+	  expansion: { id: 6, name: 'The War Within' },
+	  frozen: true
+	},
+	{
+	  id: 27,
+	  name: 'Torghast',
+	  expansion: { id: 4, name: 'Shadowlands' },
+	  frozen: true
+	},
+	{
+	  id: 25,
+	  name: 'Mythic+ Seasons 1 - 3',
+	  expansion: { id: 4, name: 'Shadowlands' },
+	  frozen: true
+	},
+	{
+	  id: 24,
+	  name: "Ny'alotha",
+	  expansion: { id: 3, name: 'Battle for Azeroth' },
+	  frozen: true
+	},
+	{
+	  id: 23,
+	  name: 'The Eternal Palace',
+	  expansion: { id: 3, name: 'Battle for Azeroth' },
+	  frozen: true
+	},
+	{
+	  id: 22,
+	  name: 'Crucible of Storms',
+	  expansion: { id: 3, name: 'Battle for Azeroth' },
+	  frozen: true
+	},
+	{
+	  id: 21,
+	  name: "Battle of Dazar'alor",
+	  expansion: { id: 3, name: 'Battle for Azeroth' },
+	  frozen: true
+	},
+	{
+	  id: 19,
+	  name: 'Uldir',
+	  expansion: { id: 3, name: 'Battle for Azeroth' },
+	  frozen: true
+	},
+	{
+	  id: 12,
+	  name: 'Trial of Valor',
+	  expansion: { id: 2, name: 'Legion' },
+	  frozen: true
+	},
+	{
+	  id: 10,
+	  name: 'Emerald Nightmare',
+	  expansion: { id: 2, name: 'Legion' },
+	  frozen: true
+	},
+	{
+	  id: 8,
+	  name: 'Hellfire Citadel',
+	  expansion: { id: 1, name: 'Warlords of Draenor' },
+	  frozen: true
+	},
+	{
+	  id: 7,
+	  name: 'Blackrock Foundry',
+	  expansion: { id: 1, name: 'Warlords of Draenor' },
+	  frozen: true
+	},
+	{
+	  id: 6,
+	  name: 'Highmaul',
+	  expansion: { id: 1, name: 'Warlords of Draenor' },
+	  frozen: true
+	},
+	{
+	  id: 5,
+	  name: 'Siege of Orgrimmar',
+	  expansion: { id: 0, name: 'Mists of Pandaria' },
+	  frozen: true
+	},
+	{
+	  id: 4,
+	  name: 'Throne of Thunder',
+	  expansion: { id: 0, name: 'Mists of Pandaria' },
+	  frozen: true
+	},
+	{
+	  id: 3,
+	  name: 'Challenge Modes',
+	  expansion: { id: 1, name: 'Warlords of Draenor' },
+	  frozen: true
+	}
+  ];

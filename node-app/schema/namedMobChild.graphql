@@ -1,0 +1,18 @@
+query{
+    reportData {
+        report(code:"${code}") {
+            fights(fightIDs: [${fid}]) {
+                id
+                encounterID
+                endTime
+                completeRaid
+                enemyNPCs {
+                    id
+                    gameID
+                    instanceCount
+                    groupCount
+                }
+            }
+        }
+    }
+}

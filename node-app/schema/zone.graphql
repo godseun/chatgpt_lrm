@@ -1,0 +1,19 @@
+query{
+    worldData {
+        zones {
+            id
+            name
+            expansion {
+                id
+                name
+            }
+            frozen
+            partitions {
+                id
+                name
+                compactName
+                default
+            }
+        }
+    }
+}
