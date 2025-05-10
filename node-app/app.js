@@ -152,6 +152,16 @@ app.get("/summary", async (req, res) => {
 
 app.get("/test", async (req, res) => {
 	try {
+		// const result = await WarcraftLog.getZone().then(json => {
+		// 	if(json !== null) {
+		// 		console.log("- ✅   getZone tested", json);
+		// 		return json;
+		// 	} else {
+		// 		console.log("- ❌   getZone tested", json);
+		// 		return null;
+		// 	}
+		// });
+
 		// const result = await WarcraftLog.getCharacterByName("다순이", "azshara", "KR").then(json => {
 		// 	if(json !== null) {
 		// 		console.log("- ✅   getCharacterByName tested");
