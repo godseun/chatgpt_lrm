@@ -116,6 +116,9 @@ app.get("/summary", async (req, res) => {
 				console.log("data: ", report.code, "try: ", fights.length, "targetSourceId:", targetSourceId);
 			}
 			i++;
+			if (i > 4) {
+				break;
+			}
 		}
 
 		console.log("apiCallCount: ", callCount, "code list length: ", c_res.recentReports.data.length);
