@@ -14,9 +14,25 @@ WarcraftLog.connect(
     WL_CLIENT_SECRET
 );
 
-
 app.get("", async (req, res) => {
-	return res.status(200).json({ msg: "Hello World!" });
+	return res.status(200).json({ msg: "Hello, World!" });
+});
+
+app.get("/policy", async (req, res) => {
+	try {
+		const policy = await WarcraftLog.getHtml("index").then(html => {
+			if(html !== null) {
+				console.log("- ✅   getHtml tested");
+				return html;
+			} else {
+				console.log("- ❌   getHtml tested");
+				return null;
+			}
+		});
+		return res.status(200).send(policy);
+	} catch (error) {
+		return res.status(500).json({ error: "Failed to fetch data" });
+	}
 });
 
 app.get("/summary", async (req, res) => {
@@ -116,7 +132,7 @@ app.get("/summary", async (req, res) => {
 				console.log("data: ", report.code, "try: ", fights.length, "targetSourceId:", targetSourceId);
 			}
 			i++;
-			if (i > 4) {
+			if (i > 2) {
 				break;
 			}
 		}

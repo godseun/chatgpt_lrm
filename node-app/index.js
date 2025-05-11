@@ -15,7 +15,8 @@ module.exports = {
     connect,
     request,
     getSchema,
-    getStatistics
+    getStatistics,
+    getHtml
 };
 
 function namedDpsAndHealingPotion(code, fids, nid, aid) {
@@ -183,6 +184,18 @@ function getStatistics(zone) {
                 return;
             }
             await resolve(JSON.parse(data));
+        });
+    });
+}
+
+function getHtml(html) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(`./${html}.html`, 'utf8', async (err, data) => {
+            if (err) {
+                reject(err)
+                return;
+            }
+            await resolve(data);
         });
     });
 }
