@@ -1,7 +1,9 @@
 query{
     reportData {
         report(code:"${code}") {
-            table(fightIDs: [${fids}], dataType: Healing, sourceID: ${sourceID}, killType: Kills)
+            events(fightIDs: [${fids}], dataType: ${dType}, encounterID: ${nid}, sourceID: ${sid}, abilityID: ${aid}) {
+                data
+            }
         }
     }
 }

@@ -834,5 +834,841 @@
         }
       }
     }
+  },
+  "3013": {
+    "DPS": {
+      "Rogue": {
+        "Assassination": {
+          "DPS": 2399040.15,
+          "Max": 2798140.56,
+          "Parses": 2158
+        },
+        "Outlaw": {
+          "DPS": 2416653.44,
+          "Max": 2804466.33,
+          "Parses": 152
+        },
+        "Subtlety": {
+          "DPS": 2285250.02,
+          "Max": 2574543.56,
+          "Parses": 220
+        }
+      },
+      "Evoker": {
+        "Augmentation": {
+          "DPS": 2231944.76,
+          "Max": 2614886.8,
+          "Parses": 36
+        },
+        "Devastation": {
+          "DPS": 2427296.08,
+          "Max": 3061049.53,
+          "Parses": 2363
+        }
+      },
+      "Demon Hunter": {
+        "Havoc": {
+          "DPS": 2342772.51,
+          "Max": 2858603.47,
+          "Parses": 2497
+        }
+      },
+      "Warrior": {
+        "Fury": {
+          "DPS": 2550988.47,
+          "Max": 3038762.97,
+          "Parses": 1739
+        },
+        "Arms": {
+          "DPS": 2559345.6,
+          "Max": 3013969.17,
+          "Parses": 1380
+        }
+      },
+      "Warlock": {
+        "Destruction": {
+          "DPS": 2139275.34,
+          "Max": 2751394.69,
+          "Parses": 1887
+        },
+        "Demonology": {
+          "DPS": 2329551.87,
+          "Max": 2939901.45,
+          "Parses": 2594
+        },
+        "Affliction": {
+          "DPS": 2128813.85,
+          "Max": 2700485.25,
+          "Parses": 220
+        }
+      },
+      "Shaman": {
+        "Enhancement": {
+          "DPS": 2378482.83,
+          "Max": 2775716.56,
+          "Parses": 1326
+        },
+        "Elemental": {
+          "DPS": 2373910.52,
+          "Max": 2912637.85,
+          "Parses": 780
+        }
+      },
+      "Death Knight": {
+        "Frost": {
+          "DPS": 2530162.36,
+          "Max": 2951764.3,
+          "Parses": 338
+        },
+        "Unholy": {
+          "DPS": 2473505.71,
+          "Max": 3026318.89,
+          "Parses": 2651
+        }
+      },
+      "Priest": {
+        "Shadow": {
+          "DPS": 2306112.0,
+          "Max": 2768569.25,
+          "Parses": 1785
+        }
+      },
+      "Paladin": {
+        "Retribution": {
+          "DPS": 2506966.16,
+          "Max": 3188120.71,
+          "Parses": 3067
+        }
+      },
+      "Monk": {
+        "Windwalker": {
+          "DPS": 2543255.59,
+          "Max": 2935717.91,
+          "Parses": 1175
+        }
+      },
+      "Mage": {
+        "Frost": {
+          "DPS": 2200976.71,
+          "Max": 2950580.98,
+          "Parses": 514
+        },
+        "Fire": {
+          "DPS": 2257256.37,
+          "Max": 2946111.24,
+          "Parses": 3285
+        },
+        "Arcane": {
+          "DPS": 2295992.53,
+          "Max": 2928970.5,
+          "Parses": 1279
+        }
+      },
+      "Hunter": {
+        "Survival": {
+          "DPS": 2645236.64,
+          "Max": 3082127.93,
+          "Parses": 94
+        },
+        "Marksmanship": {
+          "DPS": 2621827.15,
+          "Max": 3302469.31,
+          "Parses": 1860
+        },
+        "Beast Mastery": {
+          "DPS": 2530997.58,
+          "Max": 3088788.85,
+          "Parses": 2864
+        }
+      },
+      "Druid": {
+        "Feral": {
+          "DPS": 2534868.69,
+          "Max": 2870113.5,
+          "Parses": 279
+        },
+        "Balance": {
+          "DPS": 2379030.32,
+          "Max": 3024982.66,
+          "Parses": 2563
+        }
+      }
+    },
+    "HPS": {
+      "Druid": {
+        "Restoration": {
+          "HPS": 3072539.01,
+          "Max": 4293473.5,
+          "Parses": 1868
+        }
+      },
+      "Monk": {
+        "Mistweaver": {
+          "HPS": 3107257.76,
+          "Max": 4225347.92,
+          "Parses": 2520
+        }
+      },
+      "Paladin": {
+        "Holy": {
+          "HPS": 3214649.6,
+          "Max": 4057388.75,
+          "Parses": 877
+        }
+      },
+      "Priest": {
+        "Discipline": {
+          "HPS": 3149113.77,
+          "Max": 4003314.9,
+          "Parses": 1880
+        },
+        "Holy": {
+          "HPS": 3103783.35,
+          "Max": 4047346.03,
+          "Parses": 1698
+        }
+      },
+      "Shaman": {
+        "Restoration": {
+          "HPS": 3161279.59,
+          "Max": 3943504.76,
+          "Parses": 1920
+        }
+      },
+      "Evoker": {
+        "Preservation": {
+          "HPS": 3153755.59,
+          "Max": 3932682.04,
+          "Parses": 409
+        }
+      }
+    }
+  },
+  "3014": {
+    "DPS": {
+      "Rogue": {
+        "Assassination": {
+          "DPS": 3366499.82,
+          "Max": 4188567.65,
+          "Parses": 1717
+        },
+        "Outlaw": {
+          "DPS": 3343637.94,
+          "Max": 3956615.09,
+          "Parses": 74
+        },
+        "Subtlety": {
+          "DPS": 2907390.97,
+          "Max": 3581427.99,
+          "Parses": 160
+        }
+      },
+      "Evoker": {
+        "Augmentation": {
+          "DPS": 3138965.78,
+          "Max": 3586056.99,
+          "Parses": 19
+        },
+        "Devastation": {
+          "DPS": 3454415.72,
+          "Max": 4603425.01,
+          "Parses": 2104
+        }
+      },
+      "Demon Hunter": {
+        "Havoc": {
+          "DPS": 3144081.75,
+          "Max": 4077889.01,
+          "Parses": 1966
+        }
+      },
+      "Warrior": {
+        "Fury": {
+          "DPS": 3002340.71,
+          "Max": 3713025.43,
+          "Parses": 1102
+        },
+        "Arms": {
+          "DPS": 2923532.67,
+          "Max": 3656745.43,
+          "Parses": 1228
+        }
+      },
+      "Warlock": {
+        "Destruction": {
+          "DPS": 3401937.18,
+          "Max": 4244593.15,
+          "Parses": 2923
+        },
+        "Demonology": {
+          "DPS": 3237812.13,
+          "Max": 3649449.7,
+          "Parses": 14
+        },
+        "Affliction": {
+          "DPS": 3601966.51,
+          "Max": 4505753.37,
+          "Parses": 1050
+        }
+      },
+      "Shaman": {
+        "Enhancement": {
+          "DPS": 3138976.21,
+          "Max": 3919199.46,
+          "Parses": 1075
+        },
+        "Elemental": {
+          "DPS": 3097007.53,
+          "Max": 4114398.41,
+          "Parses": 560
+        }
+      },
+      "Death Knight": {
+        "Frost": {
+          "DPS": 3341193.61,
+          "Max": 4117283.28,
+          "Parses": 182
+        },
+        "Unholy": {
+          "DPS": 3474253.73,
+          "Max": 4799696.94,
+          "Parses": 2255
+        }
+      },
+      "Priest": {
+        "Shadow": {
+          "DPS": 3393413.6,
+          "Max": 4415665.75,
+          "Parses": 2413
+        }
+      },
+      "Paladin": {
+        "Retribution": {
+          "DPS": 3215059.69,
+          "Max": 4074138.46,
+          "Parses": 2446
+        }
+      },
+      "Monk": {
+        "Windwalker": {
+          "DPS": 3210431.48,
+          "Max": 3994946.15,
+          "Parses": 947
+        }
+      },
+      "Mage": {
+        "Frost": {
+          "DPS": 3112519.69,
+          "Max": 4068420.19,
+          "Parses": 290
+        },
+        "Fire": {
+          "DPS": 3304192.4,
+          "Max": 4306897.39,
+          "Parses": 2642
+        },
+        "Arcane": {
+          "DPS": 3332161.75,
+          "Max": 4027125.41,
+          "Parses": 1105
+        }
+      },
+      "Hunter": {
+        "Survival": {
+          "DPS": 3178260.03,
+          "Max": 3551580.6,
+          "Parses": 18
+        },
+        "Marksmanship": {
+          "DPS": 3146492.03,
+          "Max": 4070968.82,
+          "Parses": 1492
+        },
+        "Beast Mastery": {
+          "DPS": 2872386.75,
+          "Max": 3856234.24,
+          "Parses": 2097
+        }
+      },
+      "Druid": {
+        "Feral": {
+          "DPS": 3007950.8,
+          "Max": 3695991.95,
+          "Parses": 108
+        },
+        "Balance": {
+          "DPS": 3088190.13,
+          "Max": 4203709.01,
+          "Parses": 2439
+        }
+      }
+    },
+    "HPS": {
+      "Druid": {
+        "Restoration": {
+          "HPS": 3256918.96,
+          "Max": 4141123.31,
+          "Parses": 1077
+        }
+      },
+      "Monk": {
+        "Mistweaver": {
+          "HPS": 3333912.61,
+          "Max": 4206425.61,
+          "Parses": 1860
+        }
+      },
+      "Paladin": {
+        "Holy": {
+          "HPS": 3276600.44,
+          "Max": 3931362.79,
+          "Parses": 480
+        }
+      },
+      "Priest": {
+        "Discipline": {
+          "HPS": 3308855.73,
+          "Max": 4294865.18,
+          "Parses": 1387
+        },
+        "Holy": {
+          "HPS": 3370887.84,
+          "Max": 4042472.82,
+          "Parses": 628
+        }
+      },
+      "Shaman": {
+        "Restoration": {
+          "HPS": 3398130.22,
+          "Max": 4219299.19,
+          "Parses": 1220
+        }
+      },
+      "Evoker": {
+        "Preservation": {
+          "HPS": 3502186.52,
+          "Max": 4557032.52,
+          "Parses": 138
+        }
+      }
+    }
+  },
+  "3015": {
+    "DPS": {
+      "Rogue": {
+        "Assassination": {
+          "DPS": 2661963.68,
+          "Max": 3268612.02,
+          "Parses": 807
+        },
+        "Outlaw": {
+          "DPS": 2535941.37,
+          "Max": 3127514.07,
+          "Parses": 32
+        },
+        "Subtlety": {
+          "DPS": 2522154.36,
+          "Max": 2713275.3,
+          "Parses": 73
+        }
+      },
+      "Evoker": {
+        "Augmentation": {
+          "DPS": 2435756.47,
+          "Max": 2881335.05,
+          "Parses": 11
+        },
+        "Devastation": {
+          "DPS": 2725550.6,
+          "Max": 3554719.51,
+          "Parses": 886
+        }
+      },
+      "Demon Hunter": {
+        "Havoc": {
+          "DPS": 2515386.25,
+          "Max": 3117793.4,
+          "Parses": 908
+        }
+      },
+      "Warrior": {
+        "Fury": {
+          "DPS": 2562576.83,
+          "Max": 2907288.77,
+          "Parses": 344
+        },
+        "Arms": {
+          "DPS": 2635004.6,
+          "Max": 3379774.52,
+          "Parses": 661
+        }
+      },
+      "Warlock": {
+        "Destruction": {
+          "DPS": 2953037.08,
+          "Max": 3903579.25,
+          "Parses": 1493
+        },
+        "Demonology": {
+          "DPS": 2649304.97,
+          "Max": 2872083.05,
+          "Parses": 22
+        },
+        "Affliction": {
+          "DPS": 3169933.02,
+          "Max": 3169933.02,
+          "Parses": 5
+        }
+      },
+      "Shaman": {
+        "Enhancement": {
+          "DPS": 2459433.81,
+          "Max": 2915766.44,
+          "Parses": 497
+        },
+        "Elemental": {
+          "DPS": 2551430.49,
+          "Max": 3071255.05,
+          "Parses": 169
+        }
+      },
+      "Death Knight": {
+        "Frost": {
+          "DPS": 2627875.58,
+          "Max": 2898989.41,
+          "Parses": 82
+        },
+        "Unholy": {
+          "DPS": 2656128.22,
+          "Max": 3470891.21,
+          "Parses": 683
+        }
+      },
+      "Priest": {
+        "Shadow": {
+          "DPS": 2703911.33,
+          "Max": 3190843.11,
+          "Parses": 464
+        }
+      },
+      "Paladin": {
+        "Retribution": {
+          "DPS": 2351736.24,
+          "Max": 3082113.03,
+          "Parses": 691
+        }
+      },
+      "Monk": {
+        "Windwalker": {
+          "DPS": 2624523.78,
+          "Max": 3119860.74,
+          "Parses": 527
+        }
+      },
+      "Mage": {
+        "Frost": {
+          "DPS": 2666922.84,
+          "Max": 3082482.95,
+          "Parses": 43
+        },
+        "Fire": {
+          "DPS": 2553621.19,
+          "Max": 3143080.02,
+          "Parses": 1210
+        },
+        "Arcane": {
+          "DPS": 2703807.57,
+          "Max": 3364233.37,
+          "Parses": 453
+        }
+      },
+      "Hunter": {
+        "Survival": {
+          "DPS": 2773406.5,
+          "Max": 2950977.69,
+          "Parses": 13
+        },
+        "Marksmanship": {
+          "DPS": 2659781.39,
+          "Max": 3386211.72,
+          "Parses": 447
+        },
+        "Beast Mastery": {
+          "DPS": 2678066.72,
+          "Max": 3224421.58,
+          "Parses": 911
+        }
+      },
+      "Druid": {
+        "Feral": {
+          "DPS": 2573953.48,
+          "Max": 2919279.67,
+          "Parses": 69
+        },
+        "Balance": {
+          "DPS": 2476207.6,
+          "Max": 2880923.49,
+          "Parses": 456
+        }
+      }
+    },
+    "HPS": {
+      "Druid": {
+        "Restoration": {
+          "HPS": 3171809.94,
+          "Max": 3900541.22,
+          "Parses": 763
+        }
+      },
+      "Monk": {
+        "Mistweaver": {
+          "HPS": 3259024.89,
+          "Max": 3878493.15,
+          "Parses": 1028
+        }
+      },
+      "Paladin": {
+        "Holy": {
+          "HPS": 3239992.63,
+          "Max": 4016316.29,
+          "Parses": 264
+        }
+      },
+      "Priest": {
+        "Discipline": {
+          "HPS": 3438873.35,
+          "Max": 4184830.8,
+          "Parses": 831
+        },
+        "Holy": {
+          "HPS": 3138250.03,
+          "Max": 3798325.77,
+          "Parses": 424
+        }
+      },
+      "Shaman": {
+        "Restoration": {
+          "HPS": 3207372.01,
+          "Max": 3940669.1,
+          "Parses": 517
+        }
+      },
+      "Evoker": {
+        "Preservation": {
+          "HPS": 3261914.45,
+          "Max": 3871066.68,
+          "Parses": 137
+        }
+      }
+    }
+  },
+  "3016": {
+    "DPS": {
+      "Rogue": {
+        "Assassination": {
+          "DPS": 2853742.77,
+          "Max": 3290917.62,
+          "Parses": 702
+        },
+        "Outlaw": {
+          "DPS": 2906674.06,
+          "Max": 3458965.98,
+          "Parses": 18
+        },
+        "Subtlety": {
+          "DPS": 2803659.2,
+          "Max": 3053253.08,
+          "Parses": 72
+        }
+      },
+      "Evoker": {
+        "Augmentation": {
+          "DPS": 2821222.12,
+          "Max": 3155049.22,
+          "Parses": 12
+        },
+        "Devastation": {
+          "DPS": 3079014.77,
+          "Max": 3955004.05,
+          "Parses": 779
+        }
+      },
+      "Demon Hunter": {
+        "Havoc": {
+          "DPS": 2874659.65,
+          "Max": 3644758.22,
+          "Parses": 787
+        }
+      },
+      "Warrior": {
+        "Fury": {
+          "DPS": 2955441.24,
+          "Max": 3418596.43,
+          "Parses": 568
+        },
+        "Arms": {
+          "DPS": 2799754.65,
+          "Max": 3303201.5,
+          "Parses": 297
+        }
+      },
+      "Warlock": {
+        "Destruction": {
+          "DPS": 2870276.96,
+          "Max": 3568525.64,
+          "Parses": 1166
+        },
+        "Demonology": {
+          "DPS": 2955400.54,
+          "Max": 3391862.82,
+          "Parses": 84
+        },
+        "Affliction": {
+          "DPS": 2916290.54,
+          "Max": 3187946.71,
+          "Parses": 13
+        }
+      },
+      "Shaman": {
+        "Enhancement": {
+          "DPS": 3041427.45,
+          "Max": 3507106.63,
+          "Parses": 460
+        },
+        "Elemental": {
+          "DPS": 3016799.02,
+          "Max": 3790456.27,
+          "Parses": 149
+        }
+      },
+      "Death Knight": {
+        "Frost": {
+          "DPS": 3071634.51,
+          "Max": 3502470.0,
+          "Parses": 90
+        },
+        "Unholy": {
+          "DPS": 2892550.45,
+          "Max": 3465130.25,
+          "Parses": 641
+        }
+      },
+      "Priest": {
+        "Shadow": {
+          "DPS": 2804402.02,
+          "Max": 3333988.55,
+          "Parses": 507
+        }
+      },
+      "Paladin": {
+        "Retribution": {
+          "DPS": 2895495.76,
+          "Max": 3726961.08,
+          "Parses": 653
+        }
+      },
+      "Monk": {
+        "Windwalker": {
+          "DPS": 2860893.04,
+          "Max": 3374428.4,
+          "Parses": 393
+        }
+      },
+      "Mage": {
+        "Frost": {
+          "DPS": 2990327.28,
+          "Max": 3664723.04,
+          "Parses": 27
+        },
+        "Fire": {
+          "DPS": 2768677.96,
+          "Max": 3547473.73,
+          "Parses": 1241
+        },
+        "Arcane": {
+          "DPS": 2857658.55,
+          "Max": 3168851.69,
+          "Parses": 301
+        }
+      },
+      "Hunter": {
+        "Survival": {
+          "DPS": 2747214.16,
+          "Max": 3034740.88,
+          "Parses": 6
+        },
+        "Marksmanship": {
+          "DPS": 2964471.77,
+          "Max": 3644084.51,
+          "Parses": 396
+        },
+        "Beast Mastery": {
+          "DPS": 2845280.08,
+          "Max": 3437040.8,
+          "Parses": 790
+        }
+      },
+      "Druid": {
+        "Feral": {
+          "DPS": 2820489.4,
+          "Max": 3266974.74,
+          "Parses": 51
+        },
+        "Balance": {
+          "DPS": 3041604.96,
+          "Max": 3516408.29,
+          "Parses": 610
+        }
+      }
+    },
+    "HPS": {
+      "Druid": {
+        "Restoration": {
+          "HPS": 3087620.99,
+          "Max": 3884096.45,
+          "Parses": 497
+        }
+      },
+      "Monk": {
+        "Mistweaver": {
+          "HPS": 3055392.66,
+          "Max": 3794535.67,
+          "Parses": 861
+        }
+      },
+      "Paladin": {
+        "Holy": {
+          "HPS": 2992289.54,
+          "Max": 3589841.12,
+          "Parses": 209
+        }
+      },
+      "Priest": {
+        "Discipline": {
+          "HPS": 3206567.74,
+          "Max": 3826333.49,
+          "Parses": 702
+        },
+        "Holy": {
+          "HPS": 2957718.93,
+          "Max": 3556111.88,
+          "Parses": 308
+        }
+      },
+      "Shaman": {
+        "Restoration": {
+          "HPS": 2997203.08,
+          "Max": 3580191.9,
+          "Parses": 439
+        }
+      },
+      "Evoker": {
+        "Preservation": {
+          "HPS": 2990103.18,
+          "Max": 3571693.71,
+          "Parses": 83
+        }
+      }
+    }
   }
 }

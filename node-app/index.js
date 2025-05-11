@@ -6,7 +6,7 @@ const graphql_endpoint = "https://www.warcraftlogs.com/api/v2/client";
 let access_token;
 
 module.exports = {
-    test,
+    namedDpsAndHealingPotion,
     getSurvival,
     getZone,
     getThirdTid,
@@ -14,17 +14,22 @@ module.exports = {
     getCharacterByName,
     connect,
     request,
-    getSchema
+    getSchema,
+    getStatistics
 };
 
-function test() {
+function namedDpsAndHealingPotion(code, fids, nid, aid) {
     return new Promise((resolve) => {
         let args = [];
-        request("test", args).then(json => {
+        args["code"] = code;
+        args["fids"] = fids.join(",");
+        args["nid"] = nid;
+        args["aid"] = aid ? ", abilityID: " + aid : "";
+        request("namedDpsAndHealingPotion", args).then(json => {
             try {
-                resolve(json);
+                resolve(json.data.reportData.report);
             } catch (error) {
-                console.log("Error in getSurvival:", json);
+                console.log("Error in namedDpsAndHealingPotion:", json);
                 resolve(null);
                 return;
             }
@@ -32,12 +37,15 @@ function test() {
     });
 }
 
-function getSurvival(code, fids, sourceId) {
+function getSurvival(code, fids, dType, nid, sid, aid) {
     return new Promise((resolve) => {
         let args = [];
         args["code"] = code;
         args["fids"] = fids.join(",");
-        args["sourceID"] = sourceId;
+        args["dType"] = dType;
+        args["nid"] = nid;
+        args["sid"] = sid;
+        args["aid"] = aid;
         request("survival", args).then(json => {
             try {
                 resolve(json.data.reportData.report);
@@ -163,6 +171,18 @@ function getSchema(name, args) {
                 data = data.replaceAll("\$\{" + key + "\}", args[key])
             }
             await resolve(data);
+        });
+    });
+}
+
+function getStatistics(zone) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(`./statistics/${zone}.json`, 'utf8', async (err, data) => {
+            if (err) {
+                reject(err)
+                return;
+            }
+            await resolve(JSON.parse(data));
         });
     });
 }

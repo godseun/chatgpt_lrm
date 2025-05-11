@@ -6,7 +6,7 @@ query{
             recentReports {
                 data {
                     code
-                    fights(killType: Encounters) {
+                    fights(killType: Encounters, difficulty: 5) {
                         encounterID
                         kill
                         id

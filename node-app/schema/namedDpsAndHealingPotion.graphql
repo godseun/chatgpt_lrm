@@ -1,0 +1,10 @@
+query{
+    reportData {
+        report(code:"${code}") {
+            events(fightIDs: [${fids}], dataType: Healing, encounterID: ${nid}, abilityID: 431416) {
+                data
+            }
+            table(fightIDs: [${fids}], dataType: DamageDone, encounterID: ${nid} ${aid})
+        }
+    }
+}

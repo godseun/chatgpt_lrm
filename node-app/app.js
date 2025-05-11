@@ -20,12 +20,13 @@ app.get("", async (req, res) => {
 });
 
 app.get("/summary", async (req, res) => {
+	let callCount = 0;
 	let { cName, sName } = req.query;
 	if (!sName) {
 		sName = "azshara";
 	}
 	try {
-		const result = await WarcraftLog.getCharacterByName(cName, sName, "KR").then(json => {
+		const c_res = await WarcraftLog.getCharacterByName(cName, sName, "KR").then(json => {
 			if(json !== null) {
 				console.log("- ✅   getCharacterByName tested");
 				return json;
@@ -34,105 +35,112 @@ app.get("/summary", async (req, res) => {
 				return null;
 			}
 		});
+		callCount += 1;
 
-		if (result === null) {
+		const statistics = await WarcraftLog.getStatistics(42).then(json => {
+			if(json !== null) {
+				console.log("- ✅   getStatistics tested");
+				return json;
+			} else {
+				console.log("- ❌   getStatistics tested");
+				return null;
+			}
+		});
+
+		let i = 0;
+		const dataMap = {}
+		for await (const report of c_res.recentReports.data) {
+			for (let j = 0; j < undermineNameds.length; j++) {
+				const encounterId = undermineNameds[j];
+				const filterReportId = report.fights.filter(fight => fight.encounterID === encounterId);
+				if (filterReportId.length === 0) {
+					break;
+				}
+
+				const fights = filterReportId.map(fight => fight.id);
+	
+				const resData = await WarcraftLog.namedDpsAndHealingPotion(report.code, fights, encounterId).then(json => {
+					if(json !== null) {
+						console.log("- ✅   resData tested");
+						return json;
+					} else {
+						console.log("- ❌   resData tested");
+						return null;
+					}
+				});
+				callCount += 1;
+
+				const targetDPSDatas = resData.table.data.entries.filter(entry => entry.name === cName);
+				if (targetDPSDatas.length === 0) {
+					continue;
+				}
+				const targetData = targetDPSDatas[0];
+				const targetSourceId = targetData.id;
+				const DPS = targetData.total / ((targetData.activeTime * (targetData.activeTimeReduced / targetData.activeTime)) / 1000);
+
+				// abilityID 생석: 6262, 치물: 431416
+				const lifeStone = await WarcraftLog.getSurvival(report.code, fights, "Healing", encounterId, targetSourceId, 6262).then(json => {
+					if(json !== null) {
+						console.log("- ✅   lifeStone tested");
+						return json;
+					} else {
+						console.log("- ❌   lifeStone tested");
+						return null;
+					}
+				});
+				callCount += 1;
+
+				if (dataMap[encounterId] === undefined) {
+					// TODO: 직업, 특성 동적처리
+					dataMap[encounterId] = {
+						statistics: statistics[encounterId]["DPS"]["Death Knight"]["Frost"] || {},
+						dps: 0,
+						itemLevel: 0,
+						tryCount: 0,
+						healingPotion: 0,
+						lifeStone: 0
+					};
+				}
+
+				resData.events.data.map(event => {
+					if (event.sourceID === targetSourceId) {
+						dataMap[encounterId].healingPotion += 1;
+					}
+				});
+
+				dataMap[encounterId].dps += DPS * fights.length;
+				dataMap[encounterId].itemLevel += targetData.itemLevel * fights.length;
+				dataMap[encounterId].tryCount += fights.length;
+				dataMap[encounterId].lifeStone += lifeStone.events.data.length;
+				
+				console.log("data: ", report.code, "try: ", fights.length, "targetSourceId:", targetSourceId);
+			}
+			i++;
+		}
+
+		console.log("apiCallCount: ", callCount, "code list length: ", c_res.recentReports.data.length);
+
+		Object.entries(dataMap).forEach(([key, value]) => {
+			dataMap[key].dps /= dataMap[key].tryCount;
+			dataMap[key].itemLevel /= dataMap[key].tryCount;
+		});
+	
+
+		if (c_res === null) {
 			return res.status(500).json({ error: "Failed to fetch data", err_code: 1 });
 		}
 
-		const ranks = result.encounterRankings.ranks;
-		const dd = ranks.map(rank => {
-			return { order: rank.rankPercent, code: rank.report.code, fid: rank.report.fightID }
-		});
-
-		let targetSourceId = null;
-		let survival = null;
-		let myThirdNamedMobChild = null;
-		if (dd.length) {
-			dd.sort((a, b) => {
-				if (a.order < b.order) {
-					return 1;
-				}
-				if (a.order > b.order) {
-					return -1;
-				}
-				return 0;
-			});
-
-			const tid = await WarcraftLog.getThirdTid(dd[0].code, dd[0].fid).then(json => {
-				if(json !== null) {
-					console.log("- ✅   getThirdTid tested");
-					return json;
-				} else {
-					console.log("- ❌   getThirdTid tested");
-					return null;
-				}
-			});
-			if (tid === null) {
-				return res.status(500).json({ error: "Failed to fetch data", err_code: 2 });
-			}
-
-			const namedMobData = await WarcraftLog.getNamedMob(dd[0].code, dd.map(d => d.fid), tid).then(json => {
-				if(json !== null) {
-					console.log("- ✅   getNamedMob tested");
-					return json;
-				} else {
-					console.log("- ❌   getNamedMob tested");
-					return null;
-				}
-			});
-	
-			if (namedMobData === null) {
-				return res.status(500).json({ error: "Failed to fetch data", err_code: 3 });
-			}
-			targetSourceId = namedMobData.table.data.entries.filter(entry => entry.name === cName)[0].id;
-			myThirdNamedMobChild = namedMobData.table.data.entries.map(entry => {
-				return {
-					name: entry.name,
-					type: entry.type,
-					itemLevel: entry.itemLevel,
-					totalDamage: entry.total,
-				}
-			}).sort((a, b) => {
-				if (a.totalDamage < b.totalDamage) {
-					return 1;
-				}
-				if (a.totalDamage > b.totalDamage) {
-					return -1;
-				}
-				return 0;
-			}).findIndex(entry => entry.name === cName) + 1;
-
-			
-
-			survival = await WarcraftLog.getSurvival(dd[0].code, [dd[0].fid], targetSourceId).then(json => {
-				if(json !== null) {
-					console.log("- ✅   getSurvival tested");
-					return json;
-				} else {
-					console.log("- ❌   getSurvival tested");
-					return null;
-				}
-			});
-
-			for (let i = 0; i < dd.length; i++) {
-				// const surv = await WarcraftLog.getSurvival(dd[i].code, [dd[0].fid], targetSourceId)
-			}
-
-			console.log("code :", dd[0].code, "fids :", [dd[0].fid]);
-		}
-
-		const progress = result.zoneRankings.rankings.findIndex(rank => rank.rankPercent === null);
-
+		const progress = c_res.zoneRankings.rankings.findIndex(rank => rank.rankPercent === null);
 		const data = {
 			characterName: cName,
 			serverName: sName,
 			region: "KR",
-			bestPerformanceAverage: result.zoneRankings.bestPerformanceAverage,
-			difficulty: difficultyTemp[result.zoneRankings.difficulty],
-			zone: zoneTemp.filter(zoneData => zoneData.id === result.zoneRankings.zone)[0].name,
-			thirdNamedChildMobScores: myThirdNamedMobChild,
+			bestPerformanceAverage: c_res.zoneRankings.bestPerformanceAverage,
+			difficulty: difficultyTemp[c_res.zoneRankings.difficulty],
+			zone: zoneTemp.filter(zoneData => zoneData.id === c_res.zoneRankings.zone)[0].name,
+			thirdNamedChildMobScores: 0,
 			trying: `${progress === -1 ? "올킬" : progress + 1 + "넴" }`,
-			zoneRankings: [result.zoneRankings.rankings.map(ranking => {
+			zoneRankings: [c_res.zoneRankings.rankings.map(ranking => {
 				return {
 					name: ranking.encounter.name,
 					rankPercent: ranking.rankPercent,
@@ -141,52 +149,36 @@ app.get("/summary", async (req, res) => {
 					bestAmount: ranking.bestAmount,
 				}
 			})],
+			dataMap
 		}
 
-		return res.status(200).json({ survival, data });
-	} catch (err) {
+		return res.status(200).json(data);
+	}
+	catch (err) {
 		console.error("err :", err.message);
 		return res.status(500).json({ error: "Failed to fetch data" });
 	}
 });
 
 app.get("/test", async (req, res) => {
+	const { code, fightId } = req.query;
+	if (!code || !fightId) {
+		return res.status(400).json({ error: "code or fightId is missing" });
+	}
 	try {
-		// const result = await WarcraftLog.getZone().then(json => {
+		// const resData = await WarcraftLog.test(code, fightId).then(json => {
 		// 	if(json !== null) {
-		// 		console.log("- ✅   getZone tested", json);
+		// 		console.log("- ✅   test tested");
 		// 		return json;
 		// 	} else {
-		// 		console.log("- ❌   getZone tested", json);
+		// 		console.log("- ❌   test tested");
 		// 		return null;
 		// 	}
 		// });
-
-		// const result = await WarcraftLog.getCharacterByName("다순이", "azshara", "KR").then(json => {
-		// 	if(json !== null) {
-		// 		console.log("- ✅   getCharacterByName tested");
-		// 		return json;
-		// 	} else {
-		// 		console.log("- ❌   getCharacterByName tested");
-		// 		return null;
-		// 	}
-		// });
-
-		const result = await WarcraftLog.test().then(json => {
-			if(json !== null) {
-				console.log("- ✅  tested", json);
-				return json;
-			} else {
-				console.log("- ❌  tested", json);
-				return null;
-			}
-		});
-
-		if (result === null) {
+		if (resData === null) {
 			return res.status(500).json({ error: "Failed to fetch data", err_code: 1 });
 		}
-
-		return res.status(200).json(result);
+		return res.status(200).json({ test: "hello test"});
 	}
 	catch (err) {
 		console.error("err :", err.message);
@@ -198,6 +190,7 @@ app.listen(PORT, () => {
 	console.log(`server running on localhost:${PORT}`);
 });
 
+const undermineNameds = [3009, 3010, 3011, 3012, 3013, 3014, 3015, 3016];
 const difficultyTemp = ["", "", "공찾", "일반", "영웅", "신화"];
 const zoneTemp = [
 	{
@@ -422,4 +415,4 @@ const zoneTemp = [
 	  expansion: { id: 1, name: 'Warlords of Draenor' },
 	  frozen: true
 	}
-  ];
+];
