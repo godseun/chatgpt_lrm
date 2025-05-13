@@ -6,6 +6,7 @@ const graphql_endpoint = "https://www.warcraftlogs.com/api/v2/client";
 let access_token;
 
 module.exports = {
+    test,
     namedDpsAndHealingPotion,
     getSurvival,
     getZone,
@@ -18,6 +19,21 @@ module.exports = {
     getStatistics,
     getHtml
 };
+
+function test() {
+    return new Promise((resolve) => {
+        let args = [];
+        request("test", args).then(json => {
+            try {
+                resolve(json.data.reportData.report);
+            } catch (error) {
+                console.log("Error in test:", json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
 
 function namedDpsAndHealingPotion(code, fids, nid, aid) {
     return new Promise((resolve) => {

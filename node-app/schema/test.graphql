@@ -1,0 +1,7 @@
+query{
+    reportData {
+        report(code:"JmHAhaFT4zRKyZWx") {
+            table(fightIDs: [3, 28], dataType: DamageDone)
+        }
+    }
+}

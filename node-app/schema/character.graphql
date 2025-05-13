@@ -2,18 +2,20 @@ query{
     characterData {
         character(name:"${name}", serverSlug:"${server}", serverRegion:"${region}") {
             zoneRankings
-            encounterRankings(encounterID: 3011)
             recentReports {
                 data {
                     code
-                    fights(killType: Encounters, difficulty: 5) {
+                    fights(killType: Encounters) {
                         encounterID
                         kill
                         id
                         name
+                        difficulty
                     }
                 }
             }
+            gameData
+            id
         }
     }
 }
