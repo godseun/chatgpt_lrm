@@ -6,7 +6,10 @@ const graphql_endpoint = "https://www.warcraftlogs.com/api/v2/client";
 let access_token;
 
 module.exports = {
+    ctest,
     test,
+    reportByCode,
+    reportData,
     namedDpsAndHealingPotion,
     getSurvival,
     getZone,
@@ -20,14 +23,65 @@ module.exports = {
     getHtml
 };
 
-function test() {
+function ctest(code, fids) {
     return new Promise((resolve) => {
         let args = [];
-        request("test", args).then(json => {
+        args["code"] = code;
+        args["fids"] = fids.join(",");
+        request("ctest", args).then(json => {
             try {
                 resolve(json.data.reportData.report);
             } catch (error) {
+                console.log("Error in ctest:", json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
+
+function test(reportsQuery) {
+    return new Promise((resolve) => {
+        let args = [];
+        args["reportsQuery"] = reportsQuery;
+        request("test", args).then(json => {
+            try {
+                resolve(json.data.reportData);
+            } catch (error) {
                 console.log("Error in test:", json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
+
+function reportByCode(code, fids) {
+    return new Promise((resolve) => {
+        let args = [];
+        args["code"] = code;
+        args["fids"] = fids.join(",");
+        request("reportByCode", args).then(json => {
+            try {
+                resolve(json.data.reportData.report);
+            } catch (error) {
+                console.log("Error in reportByCode:", json);
+                resolve(null);
+                return;
+            }
+        })
+    });
+}
+
+function reportData(reportsQuery) {
+    return new Promise((resolve) => {
+        let args = [];
+        args["reportsQuery"] = reportsQuery;
+        request("reportData", args).then(json => {
+            try {
+                resolve(json.data.reportData);
+            } catch (error) {
+                console.log("Error in reportData:", json);
                 resolve(null);
                 return;
             }
