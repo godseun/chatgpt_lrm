@@ -4,10 +4,19 @@ version: '3.8'
 services:
   node-app:
     build: ./node-app
-    envfile: ./node-app/.env
+    env_file: ./node-app/.env
     container_name: wow-node
     expose:
       - 3000
+    networks:
+      - webnet
+    depends_on:
+      - redis
+  redis:
+    image: redis:alpine
+    container_name: wow-redis
+    ports:
+      - "6379:6379"
     networks:
       - webnet
   nginx:
@@ -31,5 +40,6 @@ services:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
     entrypoint: "/bin/sh -c 'sleep 10 && certbot certonly --webroot --webroot-path=/var/www/certbot --non-interactive --agree-tos --email alcy1024@gmail.com --no-eff-email --force-renewal -d godseun.com'"
+
 networks:
   webnet:                                                                                                                                                                              
