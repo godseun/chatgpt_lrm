@@ -58,6 +58,12 @@ app.get("/summary", async (req, res) => {
 		const reports = c_res.recentReports.data;
 		// const reports = c_res.recentReports.data.slice(0, 3); // 최대 3개
 
+		if (!c_res.zoneRankings.bestPerformanceAverage) {
+			console.log(cName, sName);
+			console.timeEnd("summary 전체 처리 시간");
+			return res.status(200).json(null);
+		}
+	
 		// 🧠 리포트 + 엔카운터 병렬화
 		await Promise.all(
 			reports.map(async (report) => {
@@ -149,9 +155,9 @@ app.get("/summary", async (req, res) => {
 			msg2 = "유리대포 성향이";
 		}
 
-		let msg3 = "하겠습니다.";
+		let recurit = true;
 		if (c_res.zoneRankings.bestPerformanceAverage < 40 && (survTemp.healingPotion + survTemp.lifeStone) / survTemp.tryCount < 0.1) {
-			msg3 = "하지 않겠습니다.";
+			recurit = false;
 		}
 
 		const progress = c_res.zoneRankings.rankings.findIndex(rank => rank.rankPercent === null);
@@ -160,18 +166,25 @@ app.get("/summary", async (req, res) => {
 			serverName: sName,
 			region: "KR",
 			bestPerformanceAverage: c_res.zoneRankings.bestPerformanceAverage,
-			summary: `현재 ${difficultyTemp[c_res.zoneRankings.difficulty]}에서 딜량이 ${msg1}, ${msg2} 있습니다.\n저라면 함께 ${msg3}`,
+			scoreColor: getRogColor(c_res.zoneRankings.bestPerformanceAverage),
+			summary: `현재 ${difficultyTemp[c_res.zoneRankings.difficulty]}에서 딜량이 ${msg1}, ${msg2} 있습니다.`,
+			recurit: recurit,
 			difficulty: difficultyTemp[c_res.zoneRankings.difficulty],
 			zone: zoneTemp.find(z => z.id === c_res.zoneRankings.zone)?.krName || "Unknown",
-			trying: `${progress === -1 ? "올킬" : progress + 1 + "넴"}`,
+			trying: `${progress === -1 ? "올킬을 완료 하였습니다." : progress + 1 + "넴을 공략하고 있습니다."}`,
 			zoneRankings: [
-				c_res.zoneRankings.rankings.map(ranking => ({
-					name: undermineNameds.find(named => named.id === ranking.encounter.id).krName,
-					rankPercent: ranking.rankPercent,
-					totalKills: ranking.totalKills,
-					spec: classTemp[ranking.spec + classSalt],
-					bestAmount: ranking.bestAmount,
-				}))
+				c_res.zoneRankings.rankings.map(ranking => {
+					if (ranking.rankPercent !== null) {
+						return {
+							name: undermineNameds.find(named => named.id === ranking.encounter.id).krName,
+							rankPercent: ranking.rankPercent,
+							scoreColor: getRogColor(ranking.rankPercent),
+							totalKills: ranking.totalKills,
+							spec: classTemp[ranking.spec + classSalt],
+							bestAmount: ranking.bestAmount,
+						}
+					}
+				})
 			],
 			dataMap: Object.entries(dataMap).map(([key, value]) => ({
 				name: undermineNameds.find(named => named.id === parseInt(key)).krName,
@@ -185,6 +198,7 @@ app.get("/summary", async (req, res) => {
 		};
 
 		console.log(cName, sName, "apiCallCount: ", callCount, "code list length: ", reports.length);
+		
 		console.timeEnd("summary 전체 처리 시간");
 		
 		return res.status(200).json(data);
@@ -226,6 +240,21 @@ app.listen(PORT, () => {
 	console.log(`server running on localhost:${PORT}`);
 });
 
+function getRogColor(value) {
+	if (value >= 0 && value < 25) {
+		return "⚪️";
+	} else if (value >= 25 && value < 50) {
+		return "🟢";
+	} else if (value >= 50 && value < 80) {
+		return "🔵";
+	} else if (value >= 80 && value < 95) {
+		return "🟣";
+	} else if (value >= 95 && value < 99) {
+		return "🟠";
+	} else {
+		return "🟡";
+	}
+}
 
 const classTemp = {
 	"Blood": "혈죽",
