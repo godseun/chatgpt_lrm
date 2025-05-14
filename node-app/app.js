@@ -1,12 +1,16 @@
 require('dotenv').config();
+
 const WarcraftLog = require("./index");
 const express = require("express");
+
+const redis = require("./lib/redis");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const WL_CLIENT_ID = process.env.CLIENT_ID;
 const WL_CLIENT_SECRET = process.env.CLIENT_SECRET;
+
 
 
 WarcraftLog.connect(
@@ -70,9 +74,16 @@ app.get("/summary", async (req, res) => {
   if (!sName) sName = "azshara";
   let callCount = 0;
 
-	console.log(`[${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}] [${cName}, ${sName}]`);
-  console.time("    summary 전체 처리 시간");
-
+	const cacheKey = `summary:${cName}:${sName}`;
+  const cached = await redis.get(cacheKey);
+	const expireTime = 24 * 60 * 60; // 24시간
+	
+	console.log(`[${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}] ${cName}, ${sName} ${!cached ? "not cached" : "cached"} 요청`);
+	if (cached) {
+		return res.status(200).json(JSON.parse(cached));
+  }
+	
+	console.time("    summary 전체 처리 시간");
   try {
     const [c_res] = await Promise.all([
       WarcraftLog.getCharacterByName(cName, sName, "KR"),
@@ -167,6 +178,8 @@ app.get("/summary", async (req, res) => {
 				link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
 			};
 
+			await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
+
 			console.log("    apiCallCount:", callCount, "code list length:", reports.length);
 			console.timeEnd("    summary 전체 처리 시간");
 			return res.status(200).json(data);
@@ -199,8 +212,11 @@ app.get("/summary", async (req, res) => {
 			link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
 		};
 
+		await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
+
 		console.log("    apiCallCount:", callCount, "code list length:", reports.length);
 		console.timeEnd("    summary 전체 처리 시간");
+
 		return res.status(200).json(data);
   } catch (err) {
     console.error("err:", err.message);
