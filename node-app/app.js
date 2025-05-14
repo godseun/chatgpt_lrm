@@ -1,22 +1,13 @@
 require('dotenv').config();
 
-const WarcraftLog = require("./index");
-const express = require("express");
-
+const wowlog = require("./lib/wowlog");
 const redis = require("./lib/redis");
+
+const express = require("express");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const WL_CLIENT_ID = process.env.CLIENT_ID;
-const WL_CLIENT_SECRET = process.env.CLIENT_SECRET;
-
-
-
-WarcraftLog.connect(
-    WL_CLIENT_ID,
-    WL_CLIENT_SECRET
-);
 
 app.get("", async (req, res) => {
 	return res.status(200).json({ msg: "Hello, World!" });
@@ -24,7 +15,7 @@ app.get("", async (req, res) => {
 
 app.get("/policy", async (req, res) => {
 	try {
-		const policy = await WarcraftLog.getHtml("index").then(html => {
+		const policy = await wowlog.getHtml("index").then(html => {
 			if(html !== null) {
 				console.log("- ✅   getHtml tested");
 				return html;
@@ -42,7 +33,7 @@ app.get("/policy", async (req, res) => {
 app.get("/test", async (req, res) => {
 	const { cName, sName } = req.query;
 	try {
-		const test = cName ? await WarcraftLog.reportByCode("H1MqYarp9kLKXxPw",[47,  52,  56,  62,  76,  78,  83,  86,
+		const test = cName ? await wowlog.reportByCode("H1MqYarp9kLKXxPw",[47,  52,  56,  62,  76,  78,  83,  86,
    87,  94,  96,  98,  99, 100, 102, 107,
   109, 111, 113, 115, 117, 119, 121, 122,
   124, 126, 128, 130, 132, 134, 136, 138
@@ -54,7 +45,7 @@ app.get("/test", async (req, res) => {
 				console.log("- ❌   test tested");
 				return null;
 			}
-		}) : await WarcraftLog.ctest().then(json => {
+		}) : await wowlog.ctest().then(json => {
 			if(json !== null) {
 				console.log("- ✅   ctest tested");
 				return json;
@@ -82,11 +73,11 @@ app.get("/summary", async (req, res) => {
 	if (cached) {
 		return res.status(200).json(JSON.parse(cached));
   }
-	
+
 	console.time("    summary 전체 처리 시간");
   try {
     const [c_res] = await Promise.all([
-      WarcraftLog.getCharacterByName(cName, sName, "KR"),
+      wowlog.getCharacterByName(cName, sName, "KR"),
     ]);
     callCount++;
     if (!c_res) {
@@ -124,7 +115,7 @@ app.get("/summary", async (req, res) => {
 
 				if (mFights.length === 0) return;
 
-        const r = await WarcraftLog.reportByCode(report.code, mFights);
+        const r = await wowlog.reportByCode(report.code, mFights);
         callCount++;
 
         const targetData = r.table.data.entries.find(entry => entry.name === cName);
@@ -175,7 +166,7 @@ app.get("/summary", async (req, res) => {
 						bestAmount: ranking.bestAmount
 					})),
 				dataMap,
-				link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
+				link: `https://www.wowlogs.com/character/id/${c_res.id}`
 			};
 
 			await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
@@ -209,7 +200,7 @@ app.get("/summary", async (req, res) => {
 					bestAmount: ranking.bestAmount
 				})),
 			dataMap: null,
-			link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
+			link: `https://www.wowlogs.com/character/id/${c_res.id}`
 		};
 
 		await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
@@ -241,7 +232,7 @@ async function getSurvivalData(codeWithSourceIds, isWarlock) {
 		});
 	}).join(" ");
 
-	const resData = await WarcraftLog.reportData(reportsQuery);
+	const resData = await wowlog.reportData(reportsQuery);
 
 	const survivalData = { tryCount: 0, healingPotion: 0, lifeStone: 0 };
 	codeWithSourceIds.forEach(({ code, subFights }) => {

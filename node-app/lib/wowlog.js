@@ -1,9 +1,13 @@
-const { OAuth2 } = require("oauth");
-const fs = require("node:fs");
+require('dotenv').config();
 
-const graphql_endpoint = "https://www.warcraftlogs.com/api/v2/client";
+const common = require("./common");
 
-let access_token;
+const WL_CLIENT_ID = process.env.CLIENT_ID;
+const WL_CLIENT_SECRET = process.env.CLIENT_SECRET;
+
+(async () => {
+  await common.connect(WL_CLIENT_ID, WL_CLIENT_SECRET);
+})();
 
 module.exports = {
     ctest,
@@ -15,18 +19,13 @@ module.exports = {
     getZone,
     getThirdTid,
     getNamedMob,
-    getCharacterByName,
-    connect,
-    request,
-    getSchema,
-    getStatistics,
-    getHtml
+    getCharacterByName
 };
 
 function ctest() {
     return new Promise((resolve) => {
         let args = [];
-        request("ctest", args).then(json => {
+        common.request("ctest", args).then(json => {
             try {
                 resolve(json.data);
             } catch (error) {
@@ -41,7 +40,7 @@ function ctest() {
 function test() {
     return new Promise((resolve) => {
         let args = [];
-        request("test", args).then(json => {
+        common.request("test", args).then(json => {
             try {
                 resolve(json.data);
             } catch (error) {
@@ -58,7 +57,7 @@ function reportByCode(code, fids) {
         let args = [];
         args["code"] = code;
         args["fids"] = fids.join(",");
-        request("reportByCode", args).then(json => {
+        common.request("reportByCode", args).then(json => {
             try {
                 resolve(json.data.reportData.report);
             } catch (error) {
@@ -74,7 +73,7 @@ function reportData(reportsQuery) {
     return new Promise((resolve) => {
         let args = [];
         args["reportsQuery"] = reportsQuery;
-        request("reportData", args).then(json => {
+        common.request("reportData", args).then(json => {
             try {
                 resolve(json.data.reportData);
             } catch (error) {
@@ -93,7 +92,7 @@ function namedDpsAndHealingPotion(code, fids, nid, aid) {
         args["fids"] = fids.join(",");
         args["nid"] = nid;
         args["aid"] = aid ? ", abilityID: " + aid : "";
-        request("namedDpsAndHealingPotion", args).then(json => {
+        common.request("namedDpsAndHealingPotion", args).then(json => {
             try {
                 resolve(json.data.reportData.report);
             } catch (error) {
@@ -114,7 +113,7 @@ function getSurvival(code, fids, dType, nid, sid, aid) {
         args["nid"] = nid;
         args["sid"] = sid;
         args["aid"] = aid;
-        request("survival", args).then(json => {
+        common.request("survival", args).then(json => {
             try {
                 resolve(json.data.reportData.report);
             } catch (error) {
@@ -129,7 +128,7 @@ function getSurvival(code, fids, dType, nid, sid, aid) {
 function getZone() {
     return new Promise((resolve) => {
         let args = [];
-        request("zone", args).then(json => {
+        common.request("zone", args).then(json => {
             resolve(json.data.worldData.zones);
         })
     });
@@ -140,7 +139,7 @@ function getThirdTid(code, fid) {
         let args = [];
         args["code"] = code;
         args["fid"] = fid;
-        request("namedMobChild", args).then(json => {
+        common.request("namedMobChild", args).then(json => {
             try {
                 resolve(json.data.reportData.report.fights[0].enemyNPCs[0].id);
             } catch (error) {
@@ -158,7 +157,7 @@ function getNamedMob(code, fids, tid) {
         args["code"] = code;
         args["fids"] = fids.join(",");
         args["tid"] = tid;
-        request("namedMob", args).then(json => {
+        common.request("namedMob", args).then(json => {
             try {
                 resolve(json.data.reportData.report);
             } catch (error) {
@@ -177,7 +176,7 @@ function getCharacterByName(name, server, region) {
         args["server"] = server;
         args["region"] = region;
         // limit max 98
-        request("character", args).then(json => {
+        common.request("character", args).then(json => {
             try {
                 resolve(json.data.characterData.character);
             } catch (error) {
@@ -186,84 +185,5 @@ function getCharacterByName(name, server, region) {
                 return;
             }
         })
-    });
-}
-
-function connect(client_id, client_secret) {
-    return new Promise(function (resolve){
-        let client = new OAuth2(client_id,
-            client_secret,
-            'https://www.warcraftlogs.com/',
-            'oauth/authorize',
-            'oauth/token',
-            null);
-        client.getOAuthAccessToken(
-            '',
-            {'grant_type': 'client_credentials'},
-            function (e, token) {
-                access_token = token;
-                resolve(true);
-            });
-    });
-}
-
-function request(req_name, args) {
-    return new Promise((resolve) => {
-        getSchema(req_name, args).then(schema => {
-            fetch(graphql_endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${access_token}`,
-                },
-                body: JSON.stringify({
-                    query: schema
-                })
-            }).then((res) => {
-                res.json().then(json => {
-                    resolve(json);
-                })
-            });
-        })
-    });
-}
-
-function getSchema(name, args) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(`./schema/${name}.graphql`, 'utf8', async (err, data) => {
-            if (err) {
-                reject(err)
-                return;
-            }
-            for(let key in args)
-            {
-                data = data.replaceAll("\$\{" + key + "\}", args[key])
-            }
-            await resolve(data);
-        });
-    });
-}
-
-function getStatistics(zone) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(`./statistics/${zone}.json`, 'utf8', async (err, data) => {
-            if (err) {
-                reject(err)
-                return;
-            }
-            await resolve(JSON.parse(data));
-        });
-    });
-}
-
-function getHtml(html) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(`./${html}.html`, 'utf8', async (err, data) => {
-            if (err) {
-                reject(err)
-                return;
-            }
-            await resolve(data);
-        });
     });
 }
