@@ -2,9 +2,17 @@ query{
     characterData {
         character(name:"${name}", serverSlug:"${server}", serverRegion:"${region}") {
             zoneRankings
-            recentReports {
+            recentReports(limit: 30) {
+                total
+                per_page
+                current_page
+                last_page
+                has_more_pages
                 data {
                     code
+                    zone {
+                        id
+                    }
                     fights(killType: Encounters) {
                         encounterID
                         kill
@@ -14,7 +22,7 @@ query{
                     }
                 }
             }
-            gameData
+            gameData(forceUpdate: true)
             id
         }
     }

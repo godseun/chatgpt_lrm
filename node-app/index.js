@@ -23,14 +23,12 @@ module.exports = {
     getHtml
 };
 
-function ctest(code, fids) {
+function ctest() {
     return new Promise((resolve) => {
         let args = [];
-        args["code"] = code;
-        args["fids"] = fids.join(",");
         request("ctest", args).then(json => {
             try {
-                resolve(json.data.reportData.report);
+                resolve(json.data);
             } catch (error) {
                 console.log("Error in ctest:", json);
                 resolve(null);
@@ -40,13 +38,12 @@ function ctest(code, fids) {
     });
 }
 
-function test(reportsQuery) {
+function test() {
     return new Promise((resolve) => {
         let args = [];
-        args["reportsQuery"] = reportsQuery;
         request("test", args).then(json => {
             try {
-                resolve(json.data.reportData);
+                resolve(json.data);
             } catch (error) {
                 console.log("Error in test:", json);
                 resolve(null);
@@ -179,6 +176,7 @@ function getCharacterByName(name, server, region) {
         args["name"] = name;
         args["server"] = server;
         args["region"] = region;
+        // limit max 98
         request("character", args).then(json => {
             try {
                 resolve(json.data.characterData.character);

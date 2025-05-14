@@ -1,7 +1,28 @@
 query{
-    reportData {
-        report(code:"${code}") {
-            table(fightIDs: [${fids}], dataType: DamageDone)
+    characterData {
+        character(name:"신양갱", serverSlug:"azshara", serverRegion:"KR") {
+            id
+            zoneRankings
+            recentReports(limit: 98) {
+                total
+                per_page
+                current_page
+                last_page
+                has_more_pages
+                data {
+                    code
+                    zone {
+                        id
+                    }
+                    fights(killType: Encounters) {
+                        encounterID
+                        kill
+                        id
+                        name
+                        difficulty
+                    }
+                }
+            }
         }
     }
 }

@@ -36,103 +36,176 @@ app.get("/policy", async (req, res) => {
 });
 
 app.get("/test", async (req, res) => {
+	const { cName, sName } = req.query;
 	try {
-		// const test = await WarcraftLog.test("").then(html => {
-		// 	if(html !== null) {
-		// 		console.log("- ✅   getHtml tested");
-		// 		return html;
-		// 	} else {
-		// 		console.log("- ❌   getHtml tested");
-		// 		return null;
-		// 	}
-		// });
-		return res.status(200).json({ "test": "test" });
+		const test = cName ? await WarcraftLog.reportByCode("H1MqYarp9kLKXxPw",[47,  52,  56,  62,  76,  78,  83,  86,
+   87,  94,  96,  98,  99, 100, 102, 107,
+  109, 111, 113, 115, 117, 119, 121, 122,
+  124, 126, 128, 130, 132, 134, 136, 138
+]).then(json => {
+			if(json !== null) {
+				console.log("- ✅   test tested");
+				return json;
+			} else {
+				console.log("- ❌   test tested");
+				return null;
+			}
+		}) : await WarcraftLog.ctest().then(json => {
+			if(json !== null) {
+				console.log("- ✅   ctest tested");
+				return json;
+			} else {
+				console.log("- ❌   ctest tested");
+				return null;
+			}
+		});
+		return res.status(200).json({data: test});
 	} catch (error) {
 		return res.status(500).json({ error: "Failed to fetch data" });
 	}
 });
 
 app.get("/summary", async (req, res) => {
-  console.time("summary 전체 처리 시간");
-  let callCount = 0;
   let { cName, sName } = req.query;
   if (!sName) sName = "azshara";
+  let callCount = 0;
+
+	console.log(`[${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}] [${cName}, ${sName}]`);
+  console.time("    summary 전체 처리 시간");
 
   try {
     const [c_res] = await Promise.all([
       WarcraftLog.getCharacterByName(cName, sName, "KR"),
     ]);
     callCount++;
-    if (!c_res) return res.status(500).json({ error: "Failed to fetch character", err_code: 1 });
+    if (!c_res) {
+			console.timeEnd("    summary 전체 처리 시간");
+			return res.status(200).json({ error: "캐릭터명과 서버를 확인해세요." });
+		}
 
 		const zoneRankings = c_res.zoneRankings;
     const reports = c_res.recentReports.data;
 		const bpa = zoneRankings.bestPerformanceAverage;
     if (!bpa) {
       console.log(cName, sName);
-      console.timeEnd("summary 전체 처리 시간");
+      console.timeEnd("    summary 전체 처리 시간");
       return res.status(200).json(null);
     }
 		const difficulty = zoneRankings.difficulty;
 
+		console.time(`    codeWithSourceIds api time`);
     const codeWithSourceIds = await Promise.all(
       reports.map(async report => {
-        const fights = report.fights.filter(f => f.difficulty === difficulty).map(f => f.id);
-        if (!fights.length) return;
+				if (report.zone.id !== zoneRankings.zone) return;
 
-        const r = await WarcraftLog.reportByCode(report.code, fights);
+				const subFights = {};
+				const mFights = [];
+				for (const f of report.fights) {
+					for (const u of undermineNameds) {
+						if (f.difficulty === difficulty && f.encounterID === u.id) {
+							mFights.push(f.id);
+							if (!subFights[u.id]) subFights[u.id] = { name: u.krName, data: [] };
+							subFights[u.id].data.push(f.id);
+							break;
+						}
+					}
+				}
+
+				if (mFights.length === 0) return;
+
+        const r = await WarcraftLog.reportByCode(report.code, mFights);
         callCount++;
 
         const targetData = r.table.data.entries.find(entry => entry.name === cName);
         if (!targetData) return;
 
-        return { code: report.code, sid: targetData.id };
+        return { code: report.code, sid: targetData.id, subFights };
       })
     ).then(res => res.filter(Boolean));
+		console.timeEnd(`    codeWithSourceIds api time`);
 
-    const [dataMap, survivalData] = await getSurvivalData(reports, codeWithSourceIds, difficulty);
-    callCount++;
 
-    const className = c_res.gameData.global.character_class.name;
-    const classSalt = className === "마법사" ? " Mage" : className === "드루이드" ? " Druid" : className === "성기사" ? " Paladin" : "";
+		const className = c_res.gameData.global.character_class.name;
+		const progress = zoneRankings.rankings.findIndex(rank => rank.rankPercent === null);
+		const classSalt = className === "마법사" ? " Mage" : className === "드루이드" ? " Druid" : className === "성기사" ? " Paladin" : "";
 
-    const msg1 = bpa >= 80 ? "상위권이며" : bpa >= 40 ? "평균적이며" : "다소 낮은 편이며";
-    const useRate = (survivalData.healingPotion + survivalData.lifeStone) / survivalData.tryCount;
-    const msg2 = useRate >= 0.5 ? "생존성이 좋은 플레이를 하고" : useRate >= 0.1 ? "안정적인 플레이를 하고" : "유리대포 성향이";
-    const recurit = !(bpa < 40 && useRate < 0.1);
+		if (codeWithSourceIds.length > 0) {
+			console.time(`    getSurvivalData api time`);
+			const [dataMap, survivalData] = await getSurvivalData(codeWithSourceIds, className === "흑마법사");
+			console.timeEnd(`    getSurvivalData api time`);
 
-    const progress = zoneRankings.rankings.findIndex(rank => rank.rankPercent === null);
-    const data = {
-      characterName: cName,
-      serverName: sName,
-      region: "KR",
-      bestPerformanceAverage: bpa,
-      scoreColor: getRogColor(bpa),
-      summary: `현재 ${difficultyTemp[difficulty]}에서 딜량이 ${msg1}, ${msg2} 있습니다.`,
-      recurit,
-      difficulty: difficultyTemp[difficulty],
-      zone: zoneTemp.find(z => z.id === zoneRankings.zone)?.krName || "Unknown",
-      trying: progress === -1 ? "올킬을 완료 하였습니다." : `${progress + 1}넴을 공략하고 있습니다.`,
-      zoneRankings: zoneRankings.rankings
-        .filter(r => r.rankPercent !== null)
-        .map(ranking => ({
-          name: undermineNameds.find(named => named.id === ranking.encounter.id).krName,
-          rankPercent: ranking.rankPercent,
-          scoreColor: getRogColor(ranking.rankPercent),
-          totalKills: ranking.totalKills,
-          spec: classTemp[ranking.spec + classSalt],
-          bestAmount: ranking.bestAmount
-        })),
-      dataMap,
-      link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
-    };
+			callCount++;
 
-    console.log(cName, sName, "apiCallCount:", callCount, "code list length:", reports.length);
-    console.timeEnd("summary 전체 처리 시간");
-    return res.status(200).json(data);
+			const useRate = (survivalData.healingPotion + survivalData.lifeStone) / survivalData.tryCount;
+			const recurit = !(bpa < 40 && useRate < 0.1);
+	
+			const msg1 = bpa >= 80 ? "상위권이며" : bpa >= 40 ? "평균적이며" : "다소 낮은 편이며";
+			const msg2 = useRate >= 0.5 ? "생존성이 좋은 플레이를 하고" : useRate >= 0.1 ? "안정적인 플레이를 하고" : "유리대포 성향이";
+
+			const data = {
+				characterName: cName,
+				serverName: sName,
+				region: "KR",
+				bestPerformanceAverage: bpa,
+				scoreColor: getRogColor(bpa),
+				summary: `현재 ${difficultyTemp[difficulty]}에서 딜량이 ${msg1}, ${msg2} 있습니다.`,
+				recurit: recurit ? "초대 하시죠" : "차단 하시죠",
+				difficulty: difficultyTemp[difficulty],
+				zone: zoneTemp.find(z => z.id === zoneRankings.zone)?.krName || "Unknown",
+				trying: progress === -1 ? "올킬을 완료 하였습니다." : `${progress + 1}넴을 공략하고 있습니다.`,
+				zoneRankings: zoneRankings.rankings
+					.filter(r => r.rankPercent !== null)
+					.map(ranking => ({
+						name: undermineNameds.find(named => named.id === ranking.encounter.id).krName,
+						rankPercent: ranking.rankPercent,
+						scoreColor: getRogColor(ranking.rankPercent),
+						totalKills: ranking.totalKills,
+						spec: classTemp[ranking.spec + classSalt],
+						bestAmount: ranking.bestAmount
+					})),
+				dataMap,
+				link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
+			};
+
+			console.log("    apiCallCount:", callCount, "code list length:", reports.length);
+			console.timeEnd("    summary 전체 처리 시간");
+			return res.status(200).json(data);
+		}
+
+		const msg1 = bpa >= 80 ? "상위권" : bpa >= 40 ? "평균적" : "다소 낮은 편";
+
+		const data = {
+			characterName: cName,
+			serverName: sName,
+			region: "KR",
+			bestPerformanceAverage: bpa,
+			scoreColor: getRogColor(bpa),
+			summary: `현재 ${difficultyTemp[difficulty]}에서 딜량은 ${msg1}이며. 생존력은 집계가 되지 않고 있습니다.`,
+			recurit: `보류 하시죠`,
+			difficulty: difficultyTemp[difficulty],
+			zone: zoneTemp.find(z => z.id === zoneRankings.zone)?.krName || "Unknown",
+			trying: progress === -1 ? "올킬을 완료 하였습니다." : `${progress + 1}넴을 공략하고 있습니다.`,
+			zoneRankings: zoneRankings.rankings
+				.filter(r => r.rankPercent !== null)
+				.map(ranking => ({
+					name: undermineNameds.find(named => named.id === ranking.encounter.id).krName,
+					rankPercent: ranking.rankPercent,
+					scoreColor: getRogColor(ranking.rankPercent),
+					totalKills: ranking.totalKills,
+					spec: classTemp[ranking.spec + classSalt],
+					bestAmount: ranking.bestAmount
+				})),
+			dataMap: null,
+			link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
+		};
+
+		console.log("    apiCallCount:", callCount, "code list length:", reports.length);
+		console.timeEnd("    summary 전체 처리 시간");
+		return res.status(200).json(data);
   } catch (err) {
     console.error("err:", err.message);
-    return res.status(500).json({ error: "Failed to fetch data" });
+		console.timeEnd("    summary 전체 처리 시간");
+    return res.status(500).json({ error: err });
   }
 });
 
@@ -140,37 +213,36 @@ app.listen(PORT, () => {
 	console.log(`server running on localhost:${PORT}`);
 });
 
-async function getSurvivalData(reports, codeWithSourceIds, difficulty) {
+async function getSurvivalData(codeWithSourceIds, isWarlock) {
 	const dataMap = {};
-	let reportsQuery = "";
-	reports.forEach(report => {
-		const reportQuery = undermineNameds.map(({ id }) => {
-			const fights = report.fights.filter(f => f.encounterID === id && f.difficulty === difficulty).map(f => f.id);
-			if (!fights.length) return;
 
-			if (!dataMap[id]) dataMap[id] = { name: undermineNameds.find(named => named.id === id).krName, tryCount: 0, healingPotion: 0, lifeStone: 0 };
-			dataMap[id].tryCount += fights.length;
+	const reportsQuery = codeWithSourceIds.map(({ code, subFights, sid }) => {
+		return Object.entries(subFights).map(([id, value]) => {
+			if (!dataMap[id]) dataMap[id] = { name: value.name, tryCount: 0, healingPotion: 0, lifeStone: 0 };
 
-			const sid = codeWithSourceIds.find(r => r.code === report.code)?.sid;
-			return makeReportQuery(report, fights, id, sid);
-		}).filter(Boolean);
-
-		reportsQuery += reportQuery.join(" ");
-	});
+			dataMap[id].tryCount += value.data.length;
+			return makeReportQuery(code, value.data, id, sid, isWarlock);
+		});
+	}).join(" ");
 
 	const resData = await WarcraftLog.reportData(reportsQuery);
 
 	const survivalData = { tryCount: 0, healingPotion: 0, lifeStone: 0 };
-	codeWithSourceIds.forEach(({ code }) => {
-		undermineNameds.forEach(({ id }) => {
+	codeWithSourceIds.forEach(({ code, subFights }) => {
+		Object.entries(subFights).map(([id, value]) => {
 			if (dataMap[id]) {
-				if (resData[code][`healingPotion_${id}`]) {
-					const count = resData[code][`healingPotion_${id}`].data.length;
+				if (resData[`code_${code}`][`healingPotion_${id}`]) {
+					const count = resData[`code_${code}`][`healingPotion_${id}`].data.length;
 					dataMap[id].healingPotion += count;
 					survivalData.healingPotion += count;
 				}
-				if (resData[code][`lifeStone_${id}`]) {
-					const count = resData[code][`lifeStone_${id}`].data.length;
+				if (resData[`code_${code}`][`lifeStone_${id}`]) {
+					const count = resData[`code_${code}`][`lifeStone_${id}`].data.length;
+					dataMap[id].lifeStone += count;
+					survivalData.lifeStone += count;
+				}
+				if (isWarlock && resData[`code_${code}`][`demonLifeStone_${id}`]) {
+					const count = resData[`code_${code}`][`demonLifeStone_${id}`].data.length;
 					dataMap[id].lifeStone += count;
 					survivalData.lifeStone += count;
 				}
@@ -181,10 +253,11 @@ async function getSurvivalData(reports, codeWithSourceIds, difficulty) {
 	return [dataMap, survivalData];
 }
 
-function makeReportQuery(report, fights, namedId, sid) {
-	return ` ${report.code}: report(code:"${report.code}") {
+function makeReportQuery(code, fights, namedId, sid, isWarlock) {
+	return ` code_${code}: report(code:"${code}") {
 			healingPotion_${namedId}: events(fightIDs: [${fights.join(",")}], dataType: Healing, encounterID: ${namedId}, sourceID: ${sid}, abilityID: 431416) { data }
 			lifeStone_${namedId}: events(fightIDs: [${fights.join(",")}], dataType: Healing, encounterID: ${namedId}, sourceID: ${sid}, abilityID: 6262) { data }
+			${isWarlock ? `demonLifeStone_${namedId}: events(fightIDs: [${fights.join(",")}], dataType: Healing, encounterID: ${namedId}, sourceID: ${sid}, abilityID: 452930) { data }`: ""}
 			dps_${namedId}: table(fightIDs: [${fights.join(",")}], dataType: DamageDone, encounterID: ${namedId})
 	} `;
 }
