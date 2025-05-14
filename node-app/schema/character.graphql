@@ -2,7 +2,7 @@ query{
     characterData {
         character(name:"${name}", serverSlug:"${server}", serverRegion:"${region}") {
             zoneRankings
-            recentReports(limit: 30) {
+            recentReports(limit: 20) {
                 total
                 per_page
                 current_page

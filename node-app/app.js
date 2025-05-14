@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const common = require("./lib/common");
 const wowlog = require("./lib/wowlog");
 const redis = require("./lib/redis");
 
@@ -8,14 +9,28 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static('public'));
 
 app.get("", async (req, res) => {
-	return res.status(200).json({ msg: "Hello, World!" });
+	try {
+		const hello = await common.getHtml("index").then(html => {
+			if(html !== null) {
+				console.log("- ✅   getHtml tested");
+				return html;
+			} else {
+				console.log("- ❌   getHtml tested");
+				return null;
+			}
+		});
+		return res.status(200).send(hello);
+	} catch (error) {
+		return res.status(500).json({ error: "Failed to fetch data" });
+	}
 });
 
 app.get("/policy", async (req, res) => {
 	try {
-		const policy = await wowlog.getHtml("index").then(html => {
+		const policy = await common.getHtml("policy").then(html => {
 			if(html !== null) {
 				console.log("- ✅   getHtml tested");
 				return html;
@@ -210,9 +225,9 @@ app.get("/summary", async (req, res) => {
 
 		return res.status(200).json(data);
   } catch (err) {
-    console.error("err:", err.message);
+    console.error("err:", err);
 		console.timeEnd("    summary 전체 처리 시간");
-    return res.status(500).json({ error: err });
+    return res.status(500).json({ error: "Failed to fetch data" });
   }
 });
 
