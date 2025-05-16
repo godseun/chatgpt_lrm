@@ -15,10 +15,10 @@ app.get("", async (req, res) => {
 	try {
 		const hello = await common.getHtml("index").then(html => {
 			if(html !== null) {
-				console.log("- ✅   getHtml tested");
+				console.log("- ✅   getHtml index");
 				return html;
 			} else {
-				console.log("- ❌   getHtml tested");
+				console.log("- ❌   getHtml index");
 				return null;
 			}
 		});
@@ -32,10 +32,10 @@ app.get("/policy", async (req, res) => {
 	try {
 		const policy = await common.getHtml("policy").then(html => {
 			if(html !== null) {
-				console.log("- ✅   getHtml tested");
+				console.log("- ✅   getHtml policy");
 				return html;
 			} else {
-				console.log("- ❌   getHtml tested");
+				console.log("- ❌   getHtml policy");
 				return null;
 			}
 		});
@@ -77,12 +77,11 @@ app.get("/summary", async (req, res) => {
   let callCount = 0;
 
 	const cacheKey = `summary:${cName}:${sName}`;
-  const cached = await redis.get(cacheKey);
-	const expireTime = 24 * 60 * 60; // 24시간
+  const cached = await redis.getCache(cacheKey);
 	
 	console.log(`[${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}] ${cName}, ${sName} ${!cached ? "not cached" : "cached"} 요청`);
 	if (cached) {
-		return res.status(200).json(JSON.parse(cached));
+		return res.status(200).json(cached);
   }
 
 	console.time("    summary 전체 처리 시간");
@@ -180,7 +179,7 @@ app.get("/summary", async (req, res) => {
 				link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
 			};
 
-			await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
+			redis.setCache(cacheKey, JSON.stringify(data));
 
 			console.log("    apiCallCount:", callCount, "code list length:", reports.length);
 			console.timeEnd("    summary 전체 처리 시간");
@@ -214,7 +213,7 @@ app.get("/summary", async (req, res) => {
 			link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
 		};
 
-		await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
+		redis.setCache(cacheKey, JSON.stringify(data));
 
 		console.log("    apiCallCount:", callCount, "code list length:", reports.length);
 		console.timeEnd("    summary 전체 처리 시간");

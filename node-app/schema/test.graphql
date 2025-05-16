@@ -1,5 +1,9 @@
 query{
-    reportData {
-        ${reportsQuery}
+    userData {
+        user(id: 731367) {
+            id
+            name
+            battleTag
+        }
     }
 }
