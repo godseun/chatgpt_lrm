@@ -48,11 +48,7 @@ app.get("/policy", async (req, res) => {
 app.get("/test", async (req, res) => {
 	const { cName, sName } = req.query;
 	try {
-		const test = cName ? await wowlog.reportByCode("H1MqYarp9kLKXxPw",[47,  52,  56,  62,  76,  78,  83,  86,
-   87,  94,  96,  98,  99, 100, 102, 107,
-  109, 111, 113, 115, 117, 119, 121, 122,
-  124, 126, 128, 130, 132, 134, 136, 138
-]).then(json => {
+		const test = cName ? await wowlog.test().then(json => {
 			if(json !== null) {
 				console.log("- ✅   test tested");
 				return json;
@@ -181,7 +177,7 @@ app.get("/summary", async (req, res) => {
 						bestAmount: ranking.bestAmount
 					})),
 				dataMap,
-				link: `https://www.wowlogs.com/character/id/${c_res.id}`
+				link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
 			};
 
 			await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
@@ -215,7 +211,7 @@ app.get("/summary", async (req, res) => {
 					bestAmount: ranking.bestAmount
 				})),
 			dataMap: null,
-			link: `https://www.wowlogs.com/character/id/${c_res.id}`
+			link: `https://www.warcraftlogs.com/character/id/${c_res.id}`
 		};
 
 		await redis.setEx(cacheKey, expireTime, JSON.stringify(data));
